@@ -13,3 +13,13 @@
 - **Dónde me trabé:** Al principio habían varias requisitos que repetian más o menos lo mismo para consultar espacios y para registrar entradas/salidas; los unifiqué.
 - **Qué haré la próxima clase:** Preparar los borradores de los diagramas lógico y físico de la arquitectura en draw.io y exportarlos a PNG.
 - **Uso de IA:** Pedí  apoyo para calcular la carga y  para redactar los objetivos de rendimiento, disponibilidad, RPO y RTO.
+
+## Jueves 12 de noviembre de 2026
+
+- **Que hice hoy** Configure PostgreSQL primaria y réplica mediante Docker Compose, comprobando la replicación de datos. También levanté dos instancias FastAPI y configuré NGINX para distribuir las solicitudes. Finalmente, comprobé que el sistema continúa respondiendo cuando se detiene una instancia
+
+- *Dónde me trabé:** Tuve problemas con la autenticación del usuario de replicación y con la distribución de solicitudes NGINX. Ambos problemas fueron solucionados
+
+- **Que haré la próxima clase:** Integrar Kong API Gateway, automatizar la configuración de PostgreSQL y documentar las evidencias de funcionamiento
+
+- *Uso de IA:*Utilice ChatGPT para el diagnostico de errores y la preparación de pruebas. Las configuraciones fueron ejecutadas y verificadas por mi
