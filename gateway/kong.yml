@@ -1,0 +1,19 @@
+
+_format_version: "3.0"
+
+services:
+  - name: parkflow-api
+    url: http://balanceador:80
+    routes:
+      - name: parkflow-route
+        paths:
+          - /
+        strip_path: false
+
+plugins:
+  - name: rate-limiting
+    service: parkflow-api
+    config:
+      minute: 20
+      policy: local
+      limit_by: ip
