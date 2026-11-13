@@ -23,3 +23,13 @@
 - **Que haré la próxima clase:** Integrar Kong API Gateway, automatizar la configuración de PostgreSQL y documentar las evidencias de funcionamiento
 
 - *Uso de IA:*Utilice ChatGPT para el diagnostico de errores y la preparación de pruebas. Las configuraciones fueron ejecutadas y verificadas por mi
+
+## Viernes 13 de noviembre de 2026 — Entrega Fase 2
+
+**¿Qué hice hoy?** Integré Kong API Gateway con NGINX y FastAPI. Configuré el límite de solicitudes, automaticé la inicialización de la replicación de PostgreSQL y comprobé que los seis contenedores funcionan desde un clon limpio. Documenté las pruebas y actualicé el README.
+
+**¿Dónde me trabé?** Tuve problemas con la configuración de Docker Compose, los saltos de línea del script de PostgreSQL. Logré resolverlos y verificar el funcionamiento.
+
+**¿Qué haré la próxima clase?** Comenzar la Fase 3, implementando los endpoints reales de estacionamientos y movimientos, con escrituras en la primaria y lecturas desde la réplica.
+
+**Uso de IA:** Utilicé ChatGPT como apoyo para configurar los servicios, comprender los errores y preparar las pruebas. Ejecuté los comandos, comprobé los resultados y realicé los ajustes necesarios.

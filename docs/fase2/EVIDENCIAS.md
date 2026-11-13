@@ -2,6 +2,13 @@
 **Proyecto:** ParkFlow
 **Asignatura:** ISI601 — Taller de Diseño de SistemaS
 **Fecha:** 13 de noviembre de 2026
+
+## Arquitectura completa en Docker
+
+Se levantó la arquitectura mediante `docker compose up -d`, verificando el funcionamiento de los seis contenedores: Kong, NGINX, dos instancias FastAPI, PostgreSQL primaria y PostgreSQL réplica.
+
+![Arquitectura completa en Docker](capturas/01_Arquitectura_Completa_Docker.png)
+
 ## 1. API Gateway — Kong
 
 Se configuró Kong 3.9.4 como punto de entrada de la arquitectura, enviando las solicitudes a NGINX.
@@ -60,4 +67,56 @@ Posteriormente, al consultar la réplica, se obtuvo el mismo registro, comproban
 
 Se verificó el funcionamiento de Kong API Gateway, el balanceo de carga mediante NGINX, las dos instancias FastAPI, el límite de solicitudes y la replicación de PostgreSQL.
 
-**Pendiente de validar:** levantamiento reproducible de toda la arquitectura desde un clon limpio del repositorio.
+
+
+
+## 6. Prueba de instalación desde un clon limpio
+
+El 13 de noviembre de 2026 se clonó el repositorio en una carpeta independiente llamada `ParkFlow-Prueba-limpia`.
+
+Se creó el archivo `.env` desde `.env.example` y se ejecutó:
+
+```powershell
+docker compose up -d
+```
+
+Docker Compose creó seis contenedores y dos volúmenes nuevos de PostgreSQL.
+
+### 6.1. Replicación automática
+
+Se comprobó que la réplica se inicializó sin configurar manualmente sus credenciales ni permisos.
+
+Los registros mostraron:
+
+```text
+database system is ready to accept read-only connections
+started streaming WAL from primary
+```
+
+También se creó una tabla y se insertó un registro en la primaria. La consulta posterior en la réplica devolvió el mismo registro.
+
+![Replicación automática](capturas/06_Replicacion_Automatica.png)
+
+### 6.2. Funcionamiento de Kong
+
+Se ejecutó:
+
+```powershell
+curl.exe -i http://localhost:8000/health
+```
+
+La respuesta incluyó:
+
+```text
+HTTP/1.1 200 OK
+x-instance: app-1
+Via: 1.1 kong/3.9.4
+```
+
+Esto demuestra que Kong, NGINX y FastAPI también funcionan desde el clon limpio.
+
+![Kong desde clon limpio](capturas/07_Kong_Clon_Limpio.png)
+
+### 6.3. Resultado
+
+Se verificó que la arquitectura puede inicializarse desde un clon limpio con `docker compose up -d`, una vez configurado el archivo `.env`.
