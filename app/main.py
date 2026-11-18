@@ -1,10 +1,23 @@
 
 import os
-from fastapi import FastAPI
+import psycopg
+
+from psycopg.rows import dict_row
+from fastapi import FastAPI, HTTPException, Response
+from typing import Literal
+from pydantic import BaseModel, Field
 
 app = FastAPI(title="ParkFlow")
 
 INSTANCE_ID = os.getenv("INSTANCE_ID", "app-1")
+DB_REPLICA_URL = os.getenv("DB_REPLICA_URL")
+DB_PRIMARY_URL = os.getenv("DB_PRIMARY_URL")
+
+
+class MovimientoCrear(BaseModel):
+    espacio_id: int = Field(gt=0)
+    tipo: Literal["entrada", "salida"]
+    patente: str = Field(min_length=4, max_length=12)
 
 
 @app.middleware("http")
@@ -20,3 +33,130 @@ def health():
         "status": "ok",
         "instance_id": INSTANCE_ID
     }
+
+
+@app.get("/api/v1/estacionamientos")
+def consultar_estacionamientos(response: Response):
+    with psycopg.connect(
+        DB_REPLICA_URL,
+        row_factory=dict_row
+    ) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                    e.id,
+                    e.nombre,
+                    e.ubicacion,
+                    e.capacidad,
+                    COUNT(s.id) FILTER (
+                        WHERE s.ocupado = FALSE
+                    ) AS libres,
+                    COUNT(s.id) FILTER (
+                        WHERE s.ocupado = TRUE
+                    ) AS ocupados
+                FROM estacionamientos e
+                LEFT JOIN espacios s
+                    ON s.estacionamiento_id = e.id
+                GROUP BY e.id
+                ORDER BY e.id;
+            """)
+
+            datos = cur.fetchall()
+
+    response.headers["X-DB"] = "replica"
+    return datos
+
+
+@app.get("/api/v1/estacionamientos/{estacionamiento_id}/espacios")
+def consultar_espacios(
+    estacionamiento_id: int,
+    response: Response
+):
+    with psycopg.connect(
+        DB_REPLICA_URL,
+        row_factory=dict_row
+    ) as conn:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT id, numero, ocupado
+                FROM espacios
+                WHERE estacionamiento_id = %s
+                ORDER BY numero;
+            """, (estacionamiento_id,))
+
+            espacios = cur.fetchall()
+
+    response.headers["X-DB"] = "replica"
+    return espacios
+
+@app.post("/api/v1/movimientos", status_code=201)
+def registrar_movimiento(
+    movimiento: MovimientoCrear,
+    response: Response
+):
+    with psycopg.connect(
+        DB_PRIMARY_URL,
+        row_factory=dict_row
+    ) as conn:
+        with conn.cursor() as cur:
+
+            # Bloquear el espacio durante la transacción
+            cur.execute("""
+                SELECT id, ocupado
+                FROM espacios
+                WHERE id = %s
+                FOR UPDATE;
+            """, (movimiento.espacio_id,))
+
+            espacio = cur.fetchone()
+
+            if not espacio:
+                raise HTTPException(
+                    status_code=404,
+                    detail="Espacio no encontrado"
+                )
+
+            if movimiento.tipo == "entrada" and espacio["ocupado"]:
+                raise HTTPException(
+                    status_code=409,
+                    detail="El espacio ya está ocupado"
+                )
+
+            if movimiento.tipo == "salida" and not espacio["ocupado"]:
+                raise HTTPException(
+                    status_code=409,
+                    detail="El espacio ya está libre"
+                )
+
+            nuevo_estado = movimiento.tipo == "entrada"
+
+            # Actualizar disponibilidad
+            cur.execute("""
+                UPDATE espacios
+                SET ocupado = %s
+                WHERE id = %s;
+            """, (
+                nuevo_estado,
+                movimiento.espacio_id
+            ))
+
+            # Registrar el movimiento
+            cur.execute("""
+                INSERT INTO movimientos (
+                    espacio_id, tipo, patente
+                )
+                VALUES (%s, %s, %s)
+                RETURNING id, espacio_id, tipo, patente, fecha;
+            """, (
+                movimiento.espacio_id,
+                movimiento.tipo,
+                movimiento.patente.strip().upper()
+            ))
+
+            registro = cur.fetchone()
+
+    # La transacción se confirma al salir sin errores
+    response.headers["X-DB"] = "primary"
+
+    return registro
+

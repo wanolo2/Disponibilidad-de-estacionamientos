@@ -15,6 +15,7 @@ services:
     volumes:
       - postgres_primary_data:/var/lib/postgresql/data
       - ./db/init-primary.sh:/docker-entrypoint-initdb.d/01-replicacion.sh:ro
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/02-esquema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U parkflow -d parkflow"]
       interval: 5s
@@ -65,8 +66,15 @@ services:
     restart: unless-stopped
     environment:
       INSTANCE_ID: app-1
+      DB_PRIMARY_URL: "postgresql://parkflow:${POSTGRES_PASSWORD}@db-primary:5432/parkflow"
+      DB_REPLICA_URL: "postgresql://parkflow:${POSTGRES_PASSWORD}@db-replica:5432/parkflow"
     expose:
       - "8000"
+    depends_on:
+      db-primary:
+        condition: service_healthy
+      db-replica:
+        condition: service_healthy
 
   app-2:
     build: ./app
@@ -74,8 +82,16 @@ services:
     restart: unless-stopped
     environment:
       INSTANCE_ID: app-2
+      DB_PRIMARY_URL: "postgresql://parkflow:${POSTGRES_PASSWORD}@db-primary:5432/parkflow"
+      DB_REPLICA_URL: "postgresql://parkflow:${POSTGRES_PASSWORD}@db-replica:5432/parkflow"
     expose:
       - "8000"
+    depends_on:
+      db-primary:
+        condition: service_healthy
+      db-replica:
+        condition: service_healthy
+
   balanceador:
     image: nginx:alpine
     container_name: parkflow-nginx
