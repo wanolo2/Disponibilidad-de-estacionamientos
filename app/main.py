@@ -6,7 +6,8 @@ from psycopg.rows import dict_row
 from fastapi import FastAPI, HTTPException, Response
 from typing import Literal
 from pydantic import BaseModel, Field
-
+from datetime import datetime
+from fastapi import Query
 app = FastAPI(title="ParkFlow")
 
 INSTANCE_ID = os.getenv("INSTANCE_ID", "app-1")
@@ -160,3 +161,67 @@ def registrar_movimiento(
 
     return registro
 
+
+@app.get("/api/v1/movimientos")
+def consultar_movimientos(
+    response: Response,
+    pagina: int = Query(default=1, ge=1),
+    fecha_desde: datetime | None = None,
+    fecha_hasta: datetime | None = None,
+    tipo: Literal["entrada", "salida"] | None = None
+):
+    if fecha_desde and fecha_hasta and fecha_desde > fecha_hasta:
+        raise HTTPException(
+            status_code=422,
+            detail="La fecha inicial no puede superar la final"
+        )
+
+    consulta = """
+        SELECT
+            m.id,
+            m.espacio_id,
+            s.numero AS numero_espacio,
+            m.tipo,
+            m.patente,
+            m.fecha
+        FROM movimientos m
+        JOIN espacios s ON s.id = m.espacio_id
+        WHERE 1=1
+    """
+
+    parametros = []
+
+    if fecha_desde:
+        consulta += " AND m.fecha >= %s"
+        parametros.append(fecha_desde)
+
+    if fecha_hasta:
+        consulta += " AND m.fecha <= %s"
+        parametros.append(fecha_hasta)
+
+    if tipo:
+        consulta += " AND m.tipo = %s"
+        parametros.append(tipo)
+
+    consulta += """
+        ORDER BY m.fecha DESC, m.id DESC
+        LIMIT 50 OFFSET %s
+    """
+
+    parametros.append((pagina - 1) * 50)
+
+    with psycopg.connect(
+        DB_REPLICA_URL,
+        row_factory=dict_row
+    ) as conn:
+        with conn.cursor() as cur:
+            cur.execute(consulta, parametros)
+            movimientos = cur.fetchall()
+
+    response.headers["X-DB"] = "replica"
+
+    return {
+        "pagina": pagina,
+        "limite": 50,
+        "movimientos": movimientos
+    }

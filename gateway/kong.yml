@@ -5,9 +5,14 @@ services:
   - name: parkflow-api
     url: http://balanceador:80
     routes:
-      - name: parkflow-route
+      - name: parkflow-api-route
         paths:
-          - /
+          - /api/v1
+        strip_path: false
+
+      - name: parkflow-health-route
+        paths:
+          - /health
         strip_path: false
 
 plugins:
