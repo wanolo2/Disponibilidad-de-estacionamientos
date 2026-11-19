@@ -35,6 +35,7 @@
 **Uso de IA:** Utilicé ChatGPT como apoyo para configurar los servicios, comprender los errores y preparar las pruebas. Ejecuté los comandos, comprobé los resultados y realicé los ajustes necesarios.
 
 ## Miercoles 18 de noviembre de 2026 - Avance Fase 3
+
 **¿Qué hice hoy?** Implementé los endpoints de la app utilizando FastAPI y PostgreSQL. Creé las tablas de estacionamientos, espacios y movimientos, junto con 200 espacios iniciales. Comprobé el registro de entrada y salida mediante POST en la base primaria y las consultas de disponibilidad mediante GET en la replica. Se configuro las rutas de Api Gateway Kong y verifiqué su funcionamiento
 
 **¿Dónde me trabé?** Tuve problemas con la librería Psycopg, lo que provocaba errores 504 al consultar la API. Se soluciono corrigiendo las dependencias y reconstruyendo los contenedores de Docker.
@@ -42,3 +43,13 @@
 **¿Que haré la proxima clase?** Realizar y documentar las tres pruebas de fallos de la Fase 3, completar las evidencias, actualizar README.
 
 **Uso de IA** Utilice chatGPT como apoyo para el diagnisto de errores de pyhton, Docker y para configurar las rutas de Kong-
+
+## Jueves 19 de noviembre de 2026 - Avance Fase 3
+
+**¿Qué hice hoy?** Realicé las primeras dos pruebas de fallos de ParkFlow. Primero detuve una instancia FastAPI y comprobé que el sistema continuaba funcionando mediante la segunda instancia. Después simulé un retraso en la replicación de PostgreSQL, comprobando que la primaria mostraba 199 espacios libres mientras la réplica mostraba 200. También desconecté la réplica de la red Docker, observé un error HTTP 500 y comprobé que las consultas se recuperaban al restablecer la conexión. Registré los resultados y preparé capturas de pantalla como evidencia.
+
+**¿Dónde me trabe?** Al desconectar PostgreSQL réplica, FastAPI devolvió un error HTTP 500 porque no existe un mecanismo de respaldo para las lecturas. 
+
+**¿Qué haré la próxima clase?** Realizar la tercera prueba de fallos, simulando la caída de PostgreSQL primaria y la promoción de la réplica. Medir RPO y RTO, completar la documentación, actualizar el README y preparar la entrega de la Fase 3.
+
+**Uso de IA** Utilice ChatGPT como apoyo para preparar los procedimientos de prueba, interpretar las respuestas HTTPP y realizar la documentación de los resultados obtenidos.
