@@ -1,0 +1,8 @@
+services:
+  app-1:
+    environment:
+      DB_PRIMARY_URL: "postgresql://parkflow:${POSTGRES_PASSWORD}@db-replica:5432/parkflow"
+
+  app-2:
+    environment:
+      DB_PRIMARY_URL: "postgresql://parkflow:${POSTGRES_PASSWORD}@db-replica:5432/parkflow"
