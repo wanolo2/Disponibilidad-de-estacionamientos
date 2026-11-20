@@ -53,3 +53,13 @@
 **¿Qué haré la próxima clase?** Realizar la tercera prueba de fallos, simulando la caída de PostgreSQL primaria y la promoción de la réplica. Medir RPO y RTO, completar la documentación, actualizar el README y preparar la entrega de la Fase 3.
 
 **Uso de IA** Utilice ChatGPT como apoyo para preparar los procedimientos de prueba, interpretar las respuestas HTTPP y realizar la documentación de los resultados obtenidos.
+
+## Jueves 20 de noviembre de 2026 - Entrega Final Fase 3
+
+**¿Que hice hoy?** Realicé la tercera prueba de fallos de ParkFlow, simulando la caída de PostgreSQL primaria y promoviendo la réplica para recuperar las escrituras. Efectué dos ensayos: en el primero registré un tiempo de recuperación manual de 1022 segundos y en el segundo un intervalo aproximado de 535 segundos. Comprobé que las escrituras de control se conservaron, sin pérdidas observadas en esos registros. Finalmente, reconstruí la arquitectura original, restauré los datos mediante un respaldo y verifiqué nuevamente la replicación entre ambas bases de datos.
+
+**¿Dónde me trabé?** Durante el segundo ensayo tuve problemas con el reinicio de NGINX y una solicitud POST que agotó su tiempo de espera. También encontré dificultades al inicializar PostgreSQL en un nuevo Codespace debido a la configuración de contraseñas. Logré solucionar estos problemas y recuperar el funcionamiento de los servicios. El tiempo de recuperación todavía supera el objetivo de cinco minutos.
+
+**¿Qué haré la próxima clase?** Preparar la demostración final del miércoles 25 de noviembre, practicar las fallas que podría solicitar la profesora y repasar las decisiones de arquitectura para poder explicarlas sin ayuda.
+
+**Uso de IA:** Utilicé ChatGPT como apoyo para diagnosticar errores, preparar los procedimientos de recuperación y analizar los resultados de RPO y RTO. Ejecuté personalmente las pruebas, verifiqué los registros de PostgreSQL y documenté las limitaciones encontradas.
